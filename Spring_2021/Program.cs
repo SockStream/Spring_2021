@@ -5,17 +5,65 @@ using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
  **/
+
+public class Tuile
+{
+    public int _index;
+    public int _richesse;
+
+    public Tuile(int index, int richesse)
+    {
+        _index = index;
+        _richesse = richesse;
+    }
+}
+
+public class Arbre : IComparable<Arbre>
+{
+    public int _index_case;
+    public int points;
+    bool mine;
+
+    public Arbre(int index_case, bool isMine, List<Tuile> Cases)
+    {
+        _index_case = index_case;
+        mine = isMine;
+
+        switch( Cases.Where(x => x._index == index_case).First()._richesse)
+        {
+            case 1:
+                points = 0;
+                break;
+            case 2:
+                points = 2;
+                break;
+            case 3:
+                points = 4;
+                break;
+        }
+    }
+
+    public int CompareTo(Arbre other)
+    {
+        return points.CompareTo(other.points);
+    }
+}
+
 class Player
 {
     static void Main(string[] args)
     {
         string[] inputs;
         int numberOfCells = int.Parse(Console.ReadLine()); // 37
+
+        List<Tuile> liste_tuiles = new List<Tuile>();
+
         for (int i = 0; i < numberOfCells; i++)
         {
             inputs = Console.ReadLine().Split(' ');
@@ -27,6 +75,7 @@ class Player
             int neigh3 = int.Parse(inputs[5]);
             int neigh4 = int.Parse(inputs[6]);
             int neigh5 = int.Parse(inputs[7]);
+            liste_tuiles.Add(new Tuile(index, richness));
         }
 
         // game loop
@@ -42,6 +91,9 @@ class Player
             int oppScore = int.Parse(inputs[1]); // opponent's score
             bool oppIsWaiting = inputs[2] != "0"; // whether your opponent is asleep until the next day
             int numberOfTrees = int.Parse(Console.ReadLine()); // the current amount of trees
+
+            //Ajout CBE
+            List<Arbre> liste_arbres = new List<Arbre>();
             for (int i = 0; i < numberOfTrees; i++)
             {
                 inputs = Console.ReadLine().Split(' ');
@@ -49,12 +101,24 @@ class Player
                 int size = int.Parse(inputs[1]); // size of this tree: 0-3
                 bool isMine = inputs[2] != "0"; // 1 if this is your tree
                 bool isDormant = inputs[3] != "0"; // 1 if this tree is dormant
+                if (isMine)
+                {
+                    liste_arbres.Add(new Arbre(cellIndex, isMine, liste_tuiles));
+                }
+                
             }
+            liste_arbres.Sort();
+            liste_arbres.Reverse();
+            foreach (Arbre _arbre in liste_arbres)
+            {
+                Console.Error.WriteLine(_arbre.points);
+            }
+
             int numberOfPossibleMoves = int.Parse(Console.ReadLine());
             for (int i = 0; i < numberOfPossibleMoves; i++)
             {
                 string possibleMove = Console.ReadLine();
-                Debug.WriteLine("possibleMove : " + possibleMove);
+                Console.Error.WriteLine("possibleMove : " + possibleMove);
             }
 
             // Write an action using Console.WriteLine()
@@ -62,7 +126,7 @@ class Player
 
 
             // GROW cellIdx | SEED sourceIdx targetIdx | COMPLETE cellIdx | WAIT <message>
-            Console.WriteLine("WAIT");
+            Console.WriteLine("COMPLETE " + liste_arbres.First()._index_case);
         }
     }
 }
